@@ -92,7 +92,7 @@ Notes:
 
 ### R-002 Vendored Static Qt Toolchain
 
-Status: planned
+Status: done
 Updated: 2026-05-09
 Owner: project
 
@@ -107,11 +107,23 @@ Acceptance Criteria:
 - The app target configures against `MEET_SENTINEL_QT_PREFIX`.
 
 Evidence:
-- Planned only.
+- `docs/BUILDING.md`
+- `third_party/README.md`
+- `CMakePresets.json`
+- `scripts/bootstrap_qt_submodule.sh`
+- `scripts/build_qt_linux_static.sh`
+- `scripts/build_qt_windows_static.ps1`
+- `.gitmodules`
+- `third_party/qt` pinned to Qt `v6.11.0` with `qtbase` initialized.
+- Verified on 2026-05-09: `QT_BUILD_PARALLELISM=4 scripts/build_qt_linux_static.sh`
+- Verified on 2026-05-09: `cmake --preset app-vendored-qt --fresh`, `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt`
+- Verified on 2026-05-09: `cmake --preset core-dev`, `cmake --build --preset core-dev`, `ctest --preset core-dev`
 
 Notes:
+- Qt pin selected: `v6.11.0`.
 - Build outputs and install prefixes stay ignored.
 - Prefer Windows Schannel TLS via Qt Network to avoid shipping OpenSSL DLLs.
+- Linux development builds still rely on host desktop integration libraries such as XCB, xkbcommon, and Freetype unless those are vendored later.
 
 ### R-003 Core Domain Model And Reminder Decisions
 
@@ -323,7 +335,6 @@ Avoid `Qt NetworkAuth` initially because open-source Qt licensing currently make
 
 ## Open Questions
 
-- Which exact Qt 6 release tag should be pinned for `third_party/qt`?
 - Which JSON library should be vendored: `nlohmann/json`, `glaze`, or another small dependency?
 - Which test framework should be vendored once plain `assert` tests are no longer sufficient?
 - What secure credential storage approach best fits static Windows packaging?

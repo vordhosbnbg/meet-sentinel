@@ -1,0 +1,75 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "core-dev",
+            "displayName": "Core development",
+            "description": "Build the Qt-free core and tests without requiring vendored Qt.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/core-dev",
+            "cacheVariables": {
+                "BUILD_TESTING": "ON",
+                "MEET_SENTINEL_BUILD_APP": "OFF"
+            }
+        },
+        {
+            "name": "app-vendored-qt",
+            "displayName": "App with vendored Qt",
+            "description": "Build the tray app against the vendored Qt install prefix.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/app-vendored-qt",
+            "cacheVariables": {
+                "BUILD_TESTING": "ON",
+                "MEET_SENTINEL_BUILD_APP": "ON",
+                "MEET_SENTINEL_QT_PREFIX": "${sourceDir}/third_party/qt-install"
+            }
+        },
+        {
+            "name": "app-system-qt-experiment",
+            "displayName": "App with system Qt experiment",
+            "description": "Local-only escape hatch before vendored Qt is built.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/app-system-qt-experiment",
+            "cacheVariables": {
+                "BUILD_TESTING": "ON",
+                "MEET_SENTINEL_BUILD_APP": "ON",
+                "MEET_SENTINEL_ALLOW_SYSTEM_QT": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "core-dev",
+            "configurePreset": "core-dev"
+        },
+        {
+            "name": "app-vendored-qt",
+            "configurePreset": "app-vendored-qt"
+        },
+        {
+            "name": "app-system-qt-experiment",
+            "configurePreset": "app-system-qt-experiment"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "core-dev",
+            "configurePreset": "core-dev",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "app-vendored-qt",
+            "configurePreset": "app-vendored-qt",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

@@ -1,0 +1,3 @@
+[submodule "third_party/qt"]
+	path = third_party/qt
+	url = https://code.qt.io/qt/qt5.git
