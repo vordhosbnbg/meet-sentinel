@@ -1,0 +1,18 @@
+build/
+cmake-build-*/
+.cache/
+compile_commands.json
+
+# Vendored dependency build/install outputs.
+third_party/qt-build*/
+third_party/qt-install*/
+third_party/**/build/
+third_party/**/cmake-build-*/
+
+# Local editor and OS noise.
+.idea/
+.vscode/
+*.swp
+*~
+Thumbs.db
+.DS_Store
