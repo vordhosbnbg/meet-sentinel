@@ -83,6 +83,7 @@ add_library(meet_sentinel_google
     src/google/calendar_client.cpp
     src/google/curl_http_client.cpp
     src/google/http_client.cpp
+    src/google/loopback_authorization_server.cpp
     src/google/oauth_client.cpp
     src/google/pkce.cpp
     src/google/url_encoding.cpp
@@ -98,6 +99,9 @@ target_link_libraries(meet_sentinel_google
     PRIVATE
         CURL::libcurl
 )
+if(WIN32)
+    target_link_libraries(meet_sentinel_google PRIVATE ws2_32)
+endif()
 
 if(MEET_SENTINEL_BUILD_APP)
     set(_meet_sentinel_qt_found FALSE)

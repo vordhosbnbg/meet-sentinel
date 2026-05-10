@@ -1,11 +1,14 @@
 #include "google/calendar_client.h"
+#include "google/curl_http_client.h"
 #include "google/http_client.h"
+#include "google/loopback_authorization_server.h"
 #include "google/oauth_client.h"
 #include "google/pkce.h"
 #include "google/url_encoding.h"
 
 #include <cassert>
 #include <chrono>
+#include <future>
 #include <string>
 #include <vector>
 
@@ -127,6 +130,26 @@ void calendar_client_fetches_primary_events() {
     assert(response.raw_json == R"({"items":[]})");
 }
 
+void loopback_server_receives_oauth_callback() {
+    google::LoopbackAuthorizationServer server;
+    auto callback_future =
+        std::async(std::launch::async, [&server] { return server.wait_for_callback(std::chrono::seconds{5}); });
+
+    google::CurlHttpClient http;
+    const google::HttpResponse response = http.send({
+        .method = "GET",
+        .url = server.redirect_uri() + "?code=auth%20code&state=state-value",
+        .timeout = std::chrono::seconds{5},
+    });
+
+    const auto callback = callback_future.get();
+
+    assert(response.status_code == 200);
+    assert(callback.code == "auth code");
+    assert(callback.state == "state-value");
+    assert(callback.error.empty());
+}
+
 } // namespace
 
 int main() {
@@ -135,4 +158,5 @@ int main() {
     authorization_url_contains_pkce_parameters();
     token_exchange_posts_form_body();
     calendar_client_fetches_primary_events();
+    loopback_server_receives_oauth_callback();
 }

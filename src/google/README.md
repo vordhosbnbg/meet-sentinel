@@ -17,4 +17,5 @@ Current components:
 - `curl_http_client.*`: production `libcurl` provider.
 - `pkce.*`: Authorization Code + PKCE helper functions.
 - `oauth_client.*`: authorization URL, token exchange, and refresh request client.
+- `loopback_authorization_server.*`: native-app loopback callback receiver.
 - `calendar_client.*`: raw Google Calendar events fetch client.

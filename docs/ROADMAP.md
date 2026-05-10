@@ -223,6 +223,8 @@ Evidence:
 - `src/google/pkce.cpp`
 - `src/google/oauth_client.h`
 - `src/google/oauth_client.cpp`
+- `src/google/loopback_authorization_server.h`
+- `src/google/loopback_authorization_server.cpp`
 - `src/google/calendar_client.h`
 - `src/google/calendar_client.cpp`
 - `tests/google/google_client_test.cpp`
@@ -233,8 +235,8 @@ Notes:
 - Do not use Qt Network or Qt NetworkAuth in this milestone.
 - Keep `libcurl` types behind the HTTP provider boundary; Google/OAuth code should depend on a small project-owned interface.
 - OAuth loopback callback handling should also remain Qt-free.
-- Implemented so far: HTTP abstraction, `libcurl` provider, PKCE challenge generation, OAuth authorization/token request client, and raw Calendar events fetch client.
-- Remaining before `done`: loopback callback server, app/user credential wiring, poll scheduling, immediate startup/resume polling, failure-to-cache behavior in the integrated app state, and live/manual OAuth validation with a Google native-app client.
+- Implemented so far: HTTP abstraction, `libcurl` provider, PKCE challenge generation, OAuth authorization/token request client, loopback callback server, and raw Calendar events fetch client.
+- Remaining before `done`: app/user credential wiring, poll scheduling, immediate startup/resume polling, failure-to-cache behavior in the integrated app state, and live/manual OAuth validation with a Google native-app client.
 
 ### R-006 Event Normalization
 
