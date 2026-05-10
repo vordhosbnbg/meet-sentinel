@@ -158,8 +158,8 @@ Notes:
 
 ### R-004 Persistence And Logs
 
-Status: planned
-Updated: 2026-05-09
+Status: done
+Updated: 2026-05-10
 Owner: project
 
 Goal:
@@ -173,11 +173,20 @@ Acceptance Criteria:
 - Credential storage abstraction exists, with secure storage preferred and explicit dev fallback behavior.
 
 Evidence:
-- Planned only.
+- `third_party/nlohmann_json` pinned to `v3.12.0`
+- `src/persistence/json_persistence.h`
+- `src/persistence/json_persistence.cpp`
+- `src/persistence/file_logger.h`
+- `src/persistence/file_logger.cpp`
+- `src/persistence/credential_store.h`
+- `src/persistence/credential_store.cpp`
+- `tests/persistence/persistence_test.cpp`
+- Verified on 2026-05-10: `cmake --preset core-dev`, `cmake --build --preset core-dev`, `ctest --preset core-dev --output-on-failure`
+- Verified on 2026-05-10: `cmake --preset app-vendored-qt`, `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt --output-on-failure`
 
 Notes:
-- Use a vendored JSON library for persistence schemas.
-- Consider `qtkeychain` for credentials if it fits the static-linking and licensing goals.
+- Uses vendored `nlohmann_json` for persistence schemas.
+- `PlaintextCredentialStore` is an explicit development fallback only. A secure Windows credential adapter remains a future implementation choice.
 
 ### R-005 Google OAuth And Calendar Polling
 
@@ -347,9 +356,14 @@ Date: 2026-05-10
 
 Core reminder evaluation returns both emitted reminder decisions and skip/emit traces with stable reason codes. UI should consume only decisions; logging should consume traces so every reminder outcome is explainable without moving decision logic into UI or persistence.
 
+### D-006 JSON Persistence Library
+
+Date: 2026-05-10
+
+Use vendored `nlohmann_json` pinned to `v3.12.0` for local JSON persistence. Keep schemas based on standard-library and core domain types, not Qt JSON types.
+
 ## Open Questions
 
-- Which JSON library should be vendored: `nlohmann/json`, `glaze`, or another small dependency?
 - Which test framework should be vendored once plain `assert` tests are no longer sufficient?
 - What secure credential storage approach best fits static Windows packaging?
 - What Windows baseline should release artifacts support?

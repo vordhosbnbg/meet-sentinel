@@ -19,6 +19,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+set(JSON_Install OFF CACHE BOOL "" FORCE)
+add_subdirectory(third_party/nlohmann_json EXCLUDE_FROM_ALL)
+
 add_library(meet_sentinel_core
     src/core/reminder_engine.cpp
 )
@@ -27,6 +31,22 @@ target_include_directories(meet_sentinel_core
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
 )
 target_compile_features(meet_sentinel_core PUBLIC cxx_std_20)
+
+add_library(meet_sentinel_persistence
+    src/persistence/credential_store.cpp
+    src/persistence/file_logger.cpp
+    src/persistence/json_persistence.cpp
+)
+target_include_directories(meet_sentinel_persistence
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+)
+target_compile_features(meet_sentinel_persistence PUBLIC cxx_std_20)
+target_link_libraries(meet_sentinel_persistence
+    PUBLIC
+        meet_sentinel_core
+        nlohmann_json::nlohmann_json
+)
 
 if(MEET_SENTINEL_BUILD_APP)
     set(_meet_sentinel_qt_found FALSE)
@@ -50,6 +70,7 @@ if(MEET_SENTINEL_BUILD_APP)
         target_link_libraries(meet-sentinel
             PRIVATE
                 meet_sentinel_core
+                meet_sentinel_persistence
                 Qt6::Core
                 Qt6::Gui
                 Qt6::Widgets
@@ -78,4 +99,10 @@ if(BUILD_TESTING)
     )
     target_link_libraries(meet_sentinel_core_tests PRIVATE meet_sentinel_core)
     add_test(NAME meet_sentinel_core_tests COMMAND meet_sentinel_core_tests)
+
+    add_executable(meet_sentinel_persistence_tests
+        tests/persistence/persistence_test.cpp
+    )
+    target_link_libraries(meet_sentinel_persistence_tests PRIVATE meet_sentinel_persistence)
+    add_test(NAME meet_sentinel_persistence_tests COMMAND meet_sentinel_persistence_tests)
 endif()

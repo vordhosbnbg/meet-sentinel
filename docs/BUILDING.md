@@ -10,6 +10,16 @@ cmake --build --preset core-dev
 ctest --preset core-dev
 ```
 
+Initialize pinned third-party submodules before a fresh configure:
+
+```sh
+git submodule update --init --checkout third_party/nlohmann_json
+git submodule update --init --checkout third_party/qt
+```
+
+The JSON persistence dependency is `nlohmann_json` pinned to `v3.12.0`.
+The core and persistence libraries do not require Qt.
+
 ## Vendored Qt
 
 Qt should be added as a pinned submodule under `third_party/qt`.
