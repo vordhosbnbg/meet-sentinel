@@ -10,6 +10,7 @@ third_party/**/build/
 third_party/**/cmake-build-*/
 
 # Local editor and OS noise.
+:x
 .idea/
 .vscode/
 *.swp
