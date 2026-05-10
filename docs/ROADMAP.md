@@ -52,10 +52,13 @@ The project is a local Windows-first tray app for reliable Google Calendar meeti
 Current technical direction:
 - C++20.
 - CMake + Ninja.
-- Qt 6 Widgets for tray UI, popup UI, platform integration, and event-loop-facing adapters.
-- Vendored Qt source under `third_party/qt`, built from a pinned release tag.
-- Start with Qt `qtbase` and `qtwayland`: Core, Gui, Widgets, Network, XCB, and Wayland.
+- Qt 6 Widgets for the current tray UI and popup UI only.
+- Treat Qt as a replaceable UI toolkit; on Windows, a later UI layer may replace Qt with UWP or another native UI.
+- Vendored Qt source under `third_party/qt`, built from a pinned release tag, for current UI development.
+- Start with Qt `qtbase` and `qtwayland`: Core, Gui, Widgets, XCB, and Wayland. Do not use Qt Network for HTTP.
+- Use vendored `libcurl` for Google OAuth and Calendar REST HTTP/TLS.
 - Core reminder logic stays Qt-free and Google-free.
+- Google/OAuth, event normalization, persistence, HTTP, and orchestration stay Qt-free.
 - Native OS notifications are stretch behavior only; the custom popup is primary.
 
 ## Active Roadmap
@@ -124,7 +127,7 @@ Evidence:
 Notes:
 - Qt pin selected: `v6.11.0`.
 - Build outputs and install prefixes stay ignored.
-- Prefer Windows Schannel TLS via Qt Network to avoid shipping OpenSSL DLLs.
+- Qt is UI-only. This milestone predates the decision to use `libcurl` for HTTP/TLS, and future Qt build scope should remove unnecessary Network usage.
 - Linux development builds still rely on host desktop integration libraries such as XCB, Wayland, EGL/OpenGL, xkbcommon, and Freetype unless those are vendored later.
 - The Wayland-enabled static Qt build is verified for the current Linux development toolchain.
 
@@ -191,13 +194,17 @@ Notes:
 ### R-005 Google OAuth And Calendar Polling
 
 Status: planned
-Updated: 2026-05-09
+Updated: 2026-05-10
 Owner: project
 
 Goal:
 - Authenticate with Google and poll the primary calendar reliably.
+- Keep Google/OAuth and HTTP code independent from Qt so the UI toolkit can be replaced later.
 
 Acceptance Criteria:
+- A Qt-free `HttpClient` abstraction exists for OAuth and Calendar API code.
+- A production HTTP provider uses vendored `libcurl`.
+- The Windows `libcurl` direction prefers Schannel so OpenSSL DLLs are not required for release builds.
 - OAuth Authorization Code + PKCE flow works for a native app.
 - Primary calendar events are fetched through Google Calendar REST.
 - Polling runs immediately on startup.
@@ -210,8 +217,9 @@ Evidence:
 - Planned only.
 
 Notes:
-- Avoid Qt Network Authorization unless the project explicitly accepts its license impact.
-- Qt Network is allowed as an adapter boundary for HTTP/TLS.
+- Do not use Qt Network or Qt NetworkAuth in this milestone.
+- Keep `libcurl` types behind the HTTP provider boundary; Google/OAuth code should depend on a small project-owned interface.
+- OAuth loopback callback handling should also remain Qt-free.
 
 ### R-006 Event Normalization
 
@@ -239,11 +247,12 @@ Notes:
 ### R-007 Tray State And Popup Alerts
 
 Status: planned
-Updated: 2026-05-09
+Updated: 2026-05-10
 Owner: project
 
 Goal:
 - Provide the visible tray state and primary popup alert UI.
+- Keep the UI layer narrow enough that the current Qt Widgets implementation can later be replaced on Windows.
 
 Acceptance Criteria:
 - Tray icon shows normal, stale, auth-needed, and error states.
@@ -258,6 +267,7 @@ Evidence:
 
 Notes:
 - Native OS notifications remain secondary/stretch.
+- Qt Widgets is the current UI implementation only; do not move HTTP, polling, persistence, or reminder logic into Qt UI classes.
 
 ### R-008 Reliability Pass
 
@@ -285,16 +295,17 @@ Notes:
 ### R-009 Windows Packaging
 
 Status: planned
-Updated: 2026-05-09
+Updated: 2026-05-10
 Owner: project
 
 Goal:
 - Produce a Windows release artifact with minimal runtime dependencies.
 
 Acceptance Criteria:
-- Release build uses vendored static Qt.
+- Release build uses the current vendored static Qt UI layer, or a documented replacement UI layer if the Windows UI has moved to UWP by then.
 - MSVC runtime strategy is documented and validated.
 - Required Qt static plugins are explicitly controlled.
+- Vendored `libcurl` is built with a TLS/backend strategy that minimizes shipped DLLs, preferably Schannel on Windows.
 - Release artifact launches on a clean Windows environment matching the supported baseline.
 - Packaging notes list any unavoidable DLL/system dependencies.
 
@@ -330,7 +341,9 @@ Notes:
 
 Date: 2026-05-09
 
-Use Qt for UI, tray, popup, platform integration, event-loop-facing adapters, and possibly HTTP/TLS. Keep core reminder logic and domain data Qt-free.
+Use Qt for the current UI, tray, popup, and platform-facing desktop UI behavior. Keep core reminder logic and domain data Qt-free.
+
+Updated 2026-05-10: D-007 narrows this boundary further. Qt should not be used for HTTP, Google/OAuth, persistence, normalization, or non-UI orchestration.
 
 ### D-002 Vendored Dependencies
 
@@ -348,7 +361,7 @@ Prefer static Qt and static MSVC runtime for Windows release builds to minimize 
 
 Date: 2026-05-09
 
-Avoid `Qt NetworkAuth` initially because open-source Qt licensing currently makes that module less attractive for license-flexible development. Implement OAuth Authorization Code + PKCE directly unless this decision is revisited.
+Avoid `Qt NetworkAuth` because Qt is now UI-only in this project. Implement OAuth Authorization Code + PKCE directly on top of the project HTTP abstraction.
 
 ### D-005 Reminder Evaluation Trace
 
@@ -362,8 +375,25 @@ Date: 2026-05-10
 
 Use vendored `nlohmann_json` pinned to `v3.12.0` for local JSON persistence. Keep schemas based on standard-library and core domain types, not Qt JSON types.
 
+### D-007 Qt UI-Only Boundary
+
+Date: 2026-05-10
+
+Qt is the current UI toolkit only. New non-UI code must not depend on Qt, including Google/OAuth, HTTP, event normalization, persistence, reminder decisions, polling orchestration, and logging. Keep UI contracts narrow enough that the Windows UI can later be replaced by UWP or another native UI layer.
+
+### D-008 HTTP Client Library
+
+Date: 2026-05-10
+
+Use a project-owned Qt-free `HttpClient` abstraction for Google OAuth and Calendar REST. Implement the production provider with vendored `libcurl`; prefer Schannel for Windows release builds to avoid shipping OpenSSL DLLs. Keep `libcurl` C API types behind the provider boundary.
+
 ## Open Questions
 
 - Which test framework should be vendored once plain `assert` tests are no longer sufficient?
 - What secure credential storage approach best fits static Windows packaging?
 - What Windows baseline should release artifacts support?
+- Which exact `libcurl` version should be pinned?
+- Which `libcurl` TLS backend should Linux development builds use?
+- Should the OAuth loopback callback server use raw sockets, a tiny vendored HTTP server, or a minimal `libcurl`-adjacent helper?
+- How much polling orchestration belongs in a UI-independent app service versus current Qt app bootstrap glue?
+- What is the expected timing and scope for replacing Qt Widgets with UWP on Windows?

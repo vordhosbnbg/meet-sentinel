@@ -27,11 +27,13 @@ Use polling. Every reminder decision should be explainable in logs.
 
 - Use C++20.
 - Use CMake and Ninja as the primary build system.
-- Use Qt 6 Widgets for the tray app, app-controlled popup UI, timers/event loop integration, and platform-facing desktop behavior.
-- Keep Qt out of the core domain model and reminder decision logic.
+- Use Qt 6 Widgets only for the current tray UI, app-controlled popup UI, and platform-facing desktop UI behavior.
+- Treat Qt as a replaceable UI toolkit. On Windows, a future UI may replace Qt with UWP or another native UI layer.
+- Keep Qt out of core, Google/OAuth, HTTP, event normalization, reminder decision logic, and persistence.
 - Prefer the C++ standard library for core data structures, time math, filesystem paths, and pure application logic.
-- Use small, targeted third-party libraries where the standard library is missing important pieces. JSON persistence should use a vendored JSON library rather than Qt JSON once persistence is implemented.
-- Qt Network is allowed at the Google/OAuth adapter boundary if it avoids extra HTTP/TLS dependency complexity, but Qt network types must not leak into core logic.
+- Use small, targeted third-party libraries where the standard library is missing important pieces.
+- Use vendored `nlohmann_json` for JSON persistence.
+- Use vendored `libcurl` for HTTP/TLS in Google OAuth and Calendar adapters. Qt Network must not be used for HTTP.
 - Native OS notifications are a stretch goal and secondary alert channel only. The app-controlled popup remains the primary alert UI.
 
 ## Vendored Dependencies
@@ -42,7 +44,8 @@ Qt is vendored under `third_party/qt` and built from source. Build artifacts, in
 
 Default Qt scope:
 - Start with the Qt `qtbase` module only.
-- Required Qt components for the app are expected to come from `qtbase`: Core, Gui, Widgets, and Network.
+- Required Qt components for the current app are expected to come from `qtbase`: Core, Gui, and Widgets.
+- Do not add Qt Network for Google/OAuth or Calendar API access.
 - Do not add QML/Quick, WebEngine, Multimedia, SQL, or other Qt modules unless a concrete feature requires them.
 - Avoid GPL-only Qt modules unless the project explicitly accepts the license impact.
 
@@ -50,7 +53,7 @@ Release direction:
 - Prefer static Qt builds.
 - Prefer static MSVC runtime for Windows release builds.
 - Minimize shipped DLLs, while accepting unavoidable Windows system DLLs and platform runtime realities.
-- Prefer the native Windows TLS backend through Qt/Schannel on Windows to avoid shipping OpenSSL DLLs.
+- Prefer a `libcurl` Windows build using Schannel to avoid shipping OpenSSL DLLs.
 
 ## Important Reliability Requirements
 
@@ -62,7 +65,7 @@ Release direction:
 - Show visible stale/auth/error state in tray.
 - Normalize internally to UTC.
 - In core logic, use `std::chrono` time points rather than Qt date/time types.
-- At Qt boundaries, convert `QDateTime` to UTC before passing data inward.
+- At UI boundaries, convert any UI toolkit date/time types to UTC before passing data inward.
 
 ## MVP Scope
 
@@ -100,6 +103,7 @@ Do not implement:
 - Keep reminder decisions deterministic: inputs are normalized meeting instances, fired reminder state, current UTC time, and settings.
 - Keep Google Calendar fetching, normalization, reminder decisions, UI presentation, and persistence independently testable.
 - Do not put `QString`, `QDateTime`, `QJsonObject`, `QNetworkReply`, or other Qt types in `src/core/`.
+- Do not put Qt types in `src/google/`, `src/persistence/`, or future non-UI orchestration code.
 - Do not perform Google API calls from UI classes.
 - Do not perform reminder decision logic in UI classes.
 - Do not treat native OS notifications as sufficient for MVP reliability.

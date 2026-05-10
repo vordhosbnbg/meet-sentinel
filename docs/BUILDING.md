@@ -85,7 +85,7 @@ Windows release direction from a suitable MSVC developer shell:
 scripts\build_qt_windows_static.ps1
 ```
 
-The Windows script uses static runtime linking, disables PCH and unused Qt features, and prefers Schannel over OpenSSL.
+The Windows script uses static runtime linking and disables PCH and unused Qt features. Qt is the current UI toolkit only; HTTP/TLS belongs to the `libcurl` provider direction, not Qt Network.
 
 Then configure the app against the vendored Qt prefix:
 

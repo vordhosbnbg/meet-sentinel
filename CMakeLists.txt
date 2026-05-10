@@ -53,12 +53,12 @@ if(MEET_SENTINEL_BUILD_APP)
 
     if(MEET_SENTINEL_QT_PREFIX AND EXISTS "${MEET_SENTINEL_QT_PREFIX}")
         list(PREPEND CMAKE_PREFIX_PATH "${MEET_SENTINEL_QT_PREFIX}")
-        find_package(Qt6 QUIET COMPONENTS Core Gui Widgets Network)
+        find_package(Qt6 QUIET COMPONENTS Core Gui Widgets)
         set(_meet_sentinel_qt_found "${Qt6_FOUND}")
     endif()
 
     if(NOT _meet_sentinel_qt_found AND MEET_SENTINEL_ALLOW_SYSTEM_QT)
-        find_package(Qt6 QUIET COMPONENTS Core Gui Widgets Network)
+        find_package(Qt6 QUIET COMPONENTS Core Gui Widgets)
         set(_meet_sentinel_qt_found "${Qt6_FOUND}")
     endif()
 
@@ -74,7 +74,6 @@ if(MEET_SENTINEL_BUILD_APP)
                 Qt6::Core
                 Qt6::Gui
                 Qt6::Widgets
-                Qt6::Network
         )
 
         if(COMMAND qt_import_plugins)
