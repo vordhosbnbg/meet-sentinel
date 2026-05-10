@@ -4,7 +4,7 @@ set -euo pipefail
 qt_tag="${QT_TAG:-v6.11.0}"
 qt_url="${QT_URL:-https://code.qt.io/qt/qt5.git}"
 qt_dir="${QT_DIR:-third_party/qt}"
-module_subset="${QT_MODULE_SUBSET:-qtbase}"
+module_subset="${QT_MODULE_SUBSET:-qtbase,qtwayland}"
 
 if [[ ! -d .git ]]; then
     echo "Run this script from the repository root." >&2

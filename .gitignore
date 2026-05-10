@@ -13,6 +13,7 @@ third_party/**/cmake-build-*/
 :x
 .idea/
 .vscode/
+.qtcreator/
 *.swp
 *~
 Thumbs.db

@@ -6,6 +6,8 @@ qt_source="${QT_SOURCE:-${repo_root}/third_party/qt}"
 qt_build="${QT_BUILD_DIR:-${repo_root}/build/qt-linux-static}"
 qt_install="${QT_INSTALL_PREFIX:-${repo_root}/third_party/qt-install}"
 qt_build_parallelism="${QT_BUILD_PARALLELISM:-}"
+qt_qpa_backends="${QT_QPA_BACKENDS:-xcb;wayland}"
+qt_default_qpa="${QT_DEFAULT_QPA:-xcb}"
 
 if [[ ! -x "${qt_source}/configure" ]]; then
     echo "Qt source tree is not initialized at ${qt_source}." >&2
@@ -24,7 +26,8 @@ cmake -E make_directory "${qt_build}"
         -static \
         -no-pch \
         -dbus-runtime \
-        -qpa xcb \
+        -qpa "${qt_qpa_backends}" \
+        -default-qpa "${qt_default_qpa}" \
         -qt-doubleconversion \
         -qt-harfbuzz \
         -qt-libjpeg \
@@ -35,17 +38,14 @@ cmake -E make_directory "${qt_build}"
         -no-glib \
         -no-icu \
         -no-libinput \
-        -no-opengl \
         -no-gtk \
         -no-tslib \
         -no-feature-eglfs \
         -no-feature-kms \
         -no-feature-linuxfb \
-        -no-feature-qtwaylandscanner \
         -no-feature-tuiotouch \
         -no-feature-vnc \
         -no-feature-vulkan \
-        -no-feature-wayland \
         -no-feature-zstd \
         -no-feature-androiddeployqt \
         -no-feature-accessibility-atspi-bridge \

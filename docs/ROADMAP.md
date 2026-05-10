@@ -1,6 +1,6 @@
 # Meet Sentinel Roadmap
 
-Last updated: 2026-05-09
+Last updated: 2026-05-10
 
 ## Update Protocol
 
@@ -54,7 +54,7 @@ Current technical direction:
 - CMake + Ninja.
 - Qt 6 Widgets for tray UI, popup UI, platform integration, and event-loop-facing adapters.
 - Vendored Qt source under `third_party/qt`, built from a pinned release tag.
-- Start with Qt `qtbase` only: Core, Gui, Widgets, Network.
+- Start with Qt `qtbase` and `qtwayland`: Core, Gui, Widgets, Network, XCB, and Wayland.
 - Core reminder logic stays Qt-free and Google-free.
 - Native OS notifications are stretch behavior only; the custom popup is primary.
 
@@ -92,8 +92,8 @@ Notes:
 
 ### R-002 Vendored Static Qt Toolchain
 
-Status: done
-Updated: 2026-05-09
+Status: in_progress
+Updated: 2026-05-10
 Owner: project
 
 Goal:
@@ -101,8 +101,8 @@ Goal:
 
 Acceptance Criteria:
 - `third_party/qt` is added as a pinned git submodule.
-- Qt submodules are initialized with the minimal required module subset, starting with `qtbase`.
-- Static Qt build commands are validated and documented for Linux development.
+- Qt submodules are initialized with the minimal required module subset: `qtbase,qtwayland`.
+- Static Qt build commands are validated and documented for Linux development with XCB and Wayland QPA backends.
 - Windows static build commands are documented for MSVC release builds.
 - The app target configures against `MEET_SENTINEL_QT_PREFIX`.
 
@@ -118,12 +118,14 @@ Evidence:
 - Verified on 2026-05-09: `QT_BUILD_PARALLELISM=4 scripts/build_qt_linux_static.sh`
 - Verified on 2026-05-09: `cmake --preset app-vendored-qt --fresh`, `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt`
 - Verified on 2026-05-09: `cmake --preset core-dev`, `cmake --build --preset core-dev`, `ctest --preset core-dev`
+- Updated on 2026-05-10: Linux Qt scripts now initialize `qtbase,qtwayland` and configure `-qpa "xcb;wayland"` with XCB as the default QPA backend.
 
 Notes:
 - Qt pin selected: `v6.11.0`.
 - Build outputs and install prefixes stay ignored.
 - Prefer Windows Schannel TLS via Qt Network to avoid shipping OpenSSL DLLs.
-- Linux development builds still rely on host desktop integration libraries such as XCB, xkbcommon, and Freetype unless those are vendored later.
+- Linux development builds still rely on host desktop integration libraries such as XCB, Wayland, EGL/OpenGL, xkbcommon, and Freetype unless those are vendored later.
+- The Wayland-enabled static Qt rebuild is not yet verified; run the documented rebuild commands before returning this item to `done`.
 
 ### R-003 Core Domain Model And Reminder Decisions
 
