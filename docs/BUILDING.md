@@ -14,11 +14,14 @@ Initialize pinned third-party submodules before a fresh configure:
 
 ```sh
 git submodule update --init --checkout third_party/nlohmann_json
+git submodule update --init --checkout third_party/curl
 git submodule update --init --checkout third_party/qt
 ```
 
 The JSON persistence dependency is `nlohmann_json` pinned to `v3.12.0`.
+The HTTP dependency is curl/libcurl pinned to `curl-8_20_0`.
 The core and persistence libraries do not require Qt.
+Linux development builds currently use the host OpenSSL found by curl's CMake configure. Windows release builds should use Schannel.
 
 ## Vendored Qt
 

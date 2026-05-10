@@ -10,3 +10,11 @@ HTTP direction:
 - Implement the production HTTP provider with vendored `libcurl`.
 - Do not use Qt Network or Qt NetworkAuth in this layer.
 - Keep `libcurl` C API types behind the adapter boundary.
+
+Current components:
+
+- `http_client.*`: Qt-free HTTP request/response interface.
+- `curl_http_client.*`: production `libcurl` provider.
+- `pkce.*`: Authorization Code + PKCE helper functions.
+- `oauth_client.*`: authorization URL, token exchange, and refresh request client.
+- `calendar_client.*`: raw Google Calendar events fetch client.

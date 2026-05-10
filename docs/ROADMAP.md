@@ -193,7 +193,7 @@ Notes:
 
 ### R-005 Google OAuth And Calendar Polling
 
-Status: planned
+Status: in_progress
 Updated: 2026-05-10
 Owner: project
 
@@ -214,12 +214,27 @@ Acceptance Criteria:
 - Auth errors and fetch errors are represented in app state and logs.
 
 Evidence:
-- Planned only.
+- `third_party/curl` pinned to `curl-8_20_0`
+- `src/google/http_client.h`
+- `src/google/http_client.cpp`
+- `src/google/curl_http_client.h`
+- `src/google/curl_http_client.cpp`
+- `src/google/pkce.h`
+- `src/google/pkce.cpp`
+- `src/google/oauth_client.h`
+- `src/google/oauth_client.cpp`
+- `src/google/calendar_client.h`
+- `src/google/calendar_client.cpp`
+- `tests/google/google_client_test.cpp`
+- Verified on 2026-05-10: `cmake --preset core-dev`, `cmake --build --preset core-dev`, `ctest --preset core-dev --output-on-failure`
+- Verified on 2026-05-10: `cmake --preset app-vendored-qt`, `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt --output-on-failure`
 
 Notes:
 - Do not use Qt Network or Qt NetworkAuth in this milestone.
 - Keep `libcurl` types behind the HTTP provider boundary; Google/OAuth code should depend on a small project-owned interface.
 - OAuth loopback callback handling should also remain Qt-free.
+- Implemented so far: HTTP abstraction, `libcurl` provider, PKCE challenge generation, OAuth authorization/token request client, and raw Calendar events fetch client.
+- Remaining before `done`: loopback callback server, app/user credential wiring, poll scheduling, immediate startup/resume polling, failure-to-cache behavior in the integrated app state, and live/manual OAuth validation with a Google native-app client.
 
 ### R-006 Event Normalization
 
@@ -387,13 +402,13 @@ Date: 2026-05-10
 
 Use a project-owned Qt-free `HttpClient` abstraction for Google OAuth and Calendar REST. Implement the production provider with vendored `libcurl`; prefer Schannel for Windows release builds to avoid shipping OpenSSL DLLs. Keep `libcurl` C API types behind the provider boundary.
 
+Updated 2026-05-10: `third_party/curl` is pinned to `curl-8_20_0`. Linux development builds currently use host OpenSSL; Windows release builds should use Schannel.
+
 ## Open Questions
 
 - Which test framework should be vendored once plain `assert` tests are no longer sufficient?
 - What secure credential storage approach best fits static Windows packaging?
 - What Windows baseline should release artifacts support?
-- Which exact `libcurl` version should be pinned?
-- Which `libcurl` TLS backend should Linux development builds use?
 - Should the OAuth loopback callback server use raw sockets, a tiny vendored HTTP server, or a minimal `libcurl`-adjacent helper?
 - How much polling orchestration belongs in a UI-independent app service versus current Qt app bootstrap glue?
 - What is the expected timing and scope for replacing Qt Widgets with UWP on Windows?

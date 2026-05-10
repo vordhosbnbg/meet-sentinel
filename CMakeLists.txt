@@ -23,6 +23,37 @@ set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 set(JSON_Install OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/nlohmann_json EXCLUDE_FROM_ALL)
 
+set(BUILD_CURL_EXE OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(BUILD_LIBCURL_DOCS OFF CACHE BOOL "" FORCE)
+set(BUILD_MISC_DOCS OFF CACHE BOOL "" FORCE)
+set(CURL_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
+set(CURL_USE_LIBPSL OFF CACHE BOOL "" FORCE)
+set(CURL_USE_LIBSSH2 OFF CACHE BOOL "" FORCE)
+set(CURL_ZLIB OFF CACHE BOOL "" FORCE)
+set(CURL_BROTLI OFF CACHE BOOL "" FORCE)
+set(CURL_DISABLE_SRP ON CACHE BOOL "" FORCE)
+set(CURL_ZSTD OFF CACHE BOOL "" FORCE)
+set(ENABLE_CURL_MANUAL OFF CACHE BOOL "" FORCE)
+set(HTTP_ONLY ON CACHE BOOL "" FORCE)
+set(PICKY_COMPILER OFF CACHE BOOL "" FORCE)
+set(USE_LIBIDN2 OFF CACHE BOOL "" FORCE)
+set(USE_NGHTTP2 OFF CACHE BOOL "" FORCE)
+if(WIN32)
+    set(CURL_USE_OPENSSL OFF CACHE BOOL "" FORCE)
+    set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE)
+else()
+    set(CURL_USE_OPENSSL ON CACHE BOOL "" FORCE)
+    set(CURL_USE_SCHANNEL OFF CACHE BOOL "" FORCE)
+endif()
+
+set(_meet_sentinel_build_testing "${BUILD_TESTING}")
+set(BUILD_TESTING OFF)
+add_subdirectory(third_party/curl EXCLUDE_FROM_ALL)
+set(BUILD_TESTING "${_meet_sentinel_build_testing}")
+
 add_library(meet_sentinel_core
     src/core/reminder_engine.cpp
 )
@@ -48,6 +79,26 @@ target_link_libraries(meet_sentinel_persistence
         nlohmann_json::nlohmann_json
 )
 
+add_library(meet_sentinel_google
+    src/google/calendar_client.cpp
+    src/google/curl_http_client.cpp
+    src/google/http_client.cpp
+    src/google/oauth_client.cpp
+    src/google/pkce.cpp
+    src/google/url_encoding.cpp
+)
+target_include_directories(meet_sentinel_google
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+)
+target_compile_features(meet_sentinel_google PUBLIC cxx_std_20)
+target_link_libraries(meet_sentinel_google
+    PUBLIC
+        nlohmann_json::nlohmann_json
+    PRIVATE
+        CURL::libcurl
+)
+
 if(MEET_SENTINEL_BUILD_APP)
     set(_meet_sentinel_qt_found FALSE)
 
@@ -71,6 +122,7 @@ if(MEET_SENTINEL_BUILD_APP)
             PRIVATE
                 meet_sentinel_core
                 meet_sentinel_persistence
+                meet_sentinel_google
                 Qt6::Core
                 Qt6::Gui
                 Qt6::Widgets
@@ -104,4 +156,10 @@ if(BUILD_TESTING)
     )
     target_link_libraries(meet_sentinel_persistence_tests PRIVATE meet_sentinel_persistence)
     add_test(NAME meet_sentinel_persistence_tests COMMAND meet_sentinel_persistence_tests)
+
+    add_executable(meet_sentinel_google_tests
+        tests/google/google_client_test.cpp
+    )
+    target_link_libraries(meet_sentinel_google_tests PRIVATE meet_sentinel_google)
+    add_test(NAME meet_sentinel_google_tests COMMAND meet_sentinel_google_tests)
 endif()
