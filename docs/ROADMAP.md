@@ -92,7 +92,7 @@ Notes:
 
 ### R-002 Vendored Static Qt Toolchain
 
-Status: in_progress
+Status: done
 Updated: 2026-05-10
 Owner: project
 
@@ -119,18 +119,19 @@ Evidence:
 - Verified on 2026-05-09: `cmake --preset app-vendored-qt --fresh`, `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt`
 - Verified on 2026-05-09: `cmake --preset core-dev`, `cmake --build --preset core-dev`, `ctest --preset core-dev`
 - Updated on 2026-05-10: Linux Qt scripts now initialize `qtbase,qtwayland` and configure `-qpa "xcb;wayland"` with XCB as the default QPA backend.
+- Verified on 2026-05-10: `cmake --preset app-vendored-qt`, `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt`
 
 Notes:
 - Qt pin selected: `v6.11.0`.
 - Build outputs and install prefixes stay ignored.
 - Prefer Windows Schannel TLS via Qt Network to avoid shipping OpenSSL DLLs.
 - Linux development builds still rely on host desktop integration libraries such as XCB, Wayland, EGL/OpenGL, xkbcommon, and Freetype unless those are vendored later.
-- The Wayland-enabled static Qt rebuild is not yet verified; run the documented rebuild commands before returning this item to `done`.
+- The Wayland-enabled static Qt build is verified for the current Linux development toolchain.
 
 ### R-003 Core Domain Model And Reminder Decisions
 
-Status: planned
-Updated: 2026-05-09
+Status: done
+Updated: 2026-05-10
 Owner: project
 
 Goal:
@@ -144,11 +145,16 @@ Acceptance Criteria:
 - Core tests cover edge cases around UTC time, restart behavior, cancelled events, stale cache use, snooze, dismiss, and late polling.
 
 Evidence:
-- Planned only.
+- `src/core/reminder_engine.h`
+- `src/core/reminder_engine.cpp`
+- `tests/core/reminder_engine_test.cpp`
+- Verified on 2026-05-10: `cmake --build --preset core-dev`, `ctest --preset core-dev`
+- Verified on 2026-05-10: `cmake --build --preset app-vendored-qt`, `ctest --preset app-vendored-qt`
 
 Notes:
 - Core must not depend on Qt or Google API types.
 - Use `std::chrono` internally.
+- Persistence is still planned under R-004; R-003 defines the state and key types that persistence should serialize.
 
 ### R-004 Persistence And Logs
 
@@ -334,6 +340,12 @@ Prefer static Qt and static MSVC runtime for Windows release builds to minimize 
 Date: 2026-05-09
 
 Avoid `Qt NetworkAuth` initially because open-source Qt licensing currently makes that module less attractive for license-flexible development. Implement OAuth Authorization Code + PKCE directly unless this decision is revisited.
+
+### D-005 Reminder Evaluation Trace
+
+Date: 2026-05-10
+
+Core reminder evaluation returns both emitted reminder decisions and skip/emit traces with stable reason codes. UI should consume only decisions; logging should consume traces so every reminder outcome is explainable without moving decision logic into UI or persistence.
 
 ## Open Questions
 
